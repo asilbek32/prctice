@@ -150,7 +150,7 @@ function addUiShop(data) {
                         data-input-counter
                         class="w-10 shrink-0 border-0 bg-transparent text-center text-sm font-medium text-gray-900 focus:outline-none focus:ring-0 dark:text-white"
                         placeholder=""
-                        value="3"
+                        value="1"
                         required
                       />
                       <button
