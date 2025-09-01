@@ -220,8 +220,9 @@ function addUiShop(data) {
                       </button>
 
                       <button
+                      id=${value.id}
                         type="button"
-                        class="inline-flex items-center text-sm font-medium text-red-600 hover:underline dark:text-red-500"
+                        class="delete-shop inline-flex items-center text-sm font-medium text-red-600 hover:underline dark:text-red-500"
                       >
                         <svg
                           class="me-1.5 h-5 w-5"
@@ -249,6 +250,20 @@ function addUiShop(data) {
         `;
     shop_cart.append(div);
   });
+  let btns = document.querySelectorAll(".delete-shop");
+  btns.forEach((value) => {
+    value.addEventListener("click", (e) => {
+      shop = shop.filter((item) => item.id != e.target.id);
+      console.log(shop);
+      localStorage.setItem("shop", JSON.stringify(shop));
+      shopRefresh();
+    });
+  });
+}
+
+function shopRefresh() {
+  shop_cart.innerHTML = "";
+  addUiShop(shop);
 }
 
 addUiShop(shop);
