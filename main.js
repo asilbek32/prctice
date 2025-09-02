@@ -1,6 +1,8 @@
 let API = "https://68a5d7942a3deed2960f1d7d.mockapi.io/api/v1/uzum";
 let card = document.getElementById("card");
 let shop_cart = document.getElementById("shop_cart");
+let counter = document.getElementById("counter");
+let total_shop = document.getElementById("total_shop");
 let shop = JSON.parse(localStorage.getItem("shop")) || [];
 const getData = async () => {
   const res = await fetch(API);
@@ -86,13 +88,15 @@ function addUI(data) {
       if (shop.find((value) => value.id === e.target.id)) {
         return;
       }
-      shop = [...shop, product];
+      shop = [...shop, { ...product, counter: 1, userPrice: product.price }];
       localStorage.setItem("shop", JSON.stringify(shop));
+      counter.innerHTML = shop.length;
     });
   });
 }
 
 function addUiShop(data) {
+  counter.innerHTML = shop.length;
   data.forEach((value) => {
     let div = document.createElement("div");
     div.innerHTML = `
@@ -124,25 +128,11 @@ function addUiShop(data) {
                     <div class="flex items-center">
                       <button
                         type="button"
-                        id="decrement-button-5"
+                        id=${value.id}
                         data-input-counter-decrement="counter-input-5"
-                        class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700"
+                        class="decrement inline-flex h-5 w-5 shrink-0 items-center justify-center text-white rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700"
                       >
-                        <svg
-                          class="h-2.5 w-2.5 text-gray-900 dark:text-white"
-                          aria-hidden="true"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 18 2"
-                        >
-                          <path
-                            stroke="currentColor"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M1 1h16"
-                          />
-                        </svg>
+                        -
                       </button>
                       <input
                         type="text"
@@ -150,37 +140,23 @@ function addUiShop(data) {
                         data-input-counter
                         class="w-10 shrink-0 border-0 bg-transparent text-center text-sm font-medium text-gray-900 focus:outline-none focus:ring-0 dark:text-white"
                         placeholder=""
-                        value="1"
+                        value=${value.counter}
                         required
                       />
                       <button
                         type="button"
-                        id="increment-button-5"
+                        id=${value.id}
                         data-input-counter-increment="counter-input-5"
-                        class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700"
+                        class="increment inline-flex h-5 w-5 shrink-0 items-center justify-center text-white rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700"
                       >
-                        <svg
-                          class="h-2.5 w-2.5 text-gray-900 dark:text-white"
-                          aria-hidden="true"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 18 18"
-                        >
-                          <path
-                            stroke="currentColor"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M9 1v16M1 9h16"
-                          />
-                        </svg>
+                       +
                       </button>
                     </div>
                     <div class="text-end md:order-4 md:w-32">
                       <p
                         class="text-base font-bold text-gray-900 dark:text-white"
                       >
-                  ${value.price.toLocaleString()} so'm
+                  ${value.userPrice.toLocaleString()} so'm
                       </p>
                     </div>
                   </div>
@@ -257,6 +233,7 @@ function addUiShop(data) {
       console.log(shop);
       localStorage.setItem("shop", JSON.stringify(shop));
       shopRefresh();
+      totalPrice();
     });
   });
 }
@@ -267,3 +244,51 @@ function shopRefresh() {
 }
 
 addUiShop(shop);
+
+shop_cart.addEventListener("click", (e) => {
+  if (e.target.classList.contains("increment")) {
+    const id = e.target.id;
+
+    increment(id);
+  }
+  if (e.target.classList.contains("decrement")) {
+    const id = e.target.id;
+
+    decrement(id);
+  }
+});
+
+function increment(id) {
+  shop = shop.map((value) =>
+    value.id === id
+      ? {
+          ...value,
+          counter: value.counter += 1, 
+          userPrice: value.price * value.counter, 
+        }
+      : value
+  );
+  localStorage.setItem("shop", JSON.stringify(shop));
+  shopRefresh(); // faqat refresh qilamiz
+  totalPrice(shop);
+}
+
+function decrement(id) {
+  shop = shop.map((value) =>
+    value.id === id && value.counter > 1
+      ? {
+          ...value,
+          counter: value.counter -= 1,
+          userPrice: value.price *value.counter,
+        }
+      : value
+  );
+  localStorage.setItem("shop", JSON.stringify(shop));
+  shopRefresh();
+  totalPrice(shop);
+}
+function totalPrice(shop) {
+  let total_sum = shop.reduce((acc, value) => acc + value.userPrice, 0);
+  total_shop.innerHTML = total_sum.toLocaleString() + " so'm";
+}
+totalPrice(shop);
